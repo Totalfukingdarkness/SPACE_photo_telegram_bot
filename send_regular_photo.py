@@ -29,7 +29,8 @@ def main():
     env.read_env()
     tg_token = env.str('TG_TOKEN')
     tg_chat_id = env.str('TG_CHAT_ID')
-    os.makedirs('images', exist_ok=True)
+    dir_path = env.str('DIRECTORY_PATH', default='images')
+    os.makedirs(dir_path, exist_ok=True)
     send_all_images(tg_token, tg_chat_id)
 
 

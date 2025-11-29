@@ -1,6 +1,7 @@
 import requests
 import argparse
 import os
+from environs import env
 from support_scripts import download_file
 
 
@@ -15,7 +16,9 @@ def fetch_spacex_last_launch(args):
 
 
 def main():
-    os.makedirs('images', exist_ok=True)
+    env.read_env()
+    dir_path = env.str('DIRECTORY_PATH', default='images')
+    os.makedirs(dir_path, exist_ok=True)
     parser = argparse.ArgumentParser(description='''Default is latest lauches''')
     parser.add_argument('--id', help='ID', default='latest')
     args = parser.parse_args()

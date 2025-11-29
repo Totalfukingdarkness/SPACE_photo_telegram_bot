@@ -27,7 +27,8 @@ def fetch_nasa_apod(key):
 
 def main():
     env.read_env()
-    os.makedirs('images', exist_ok=True)
+    dir_path = env.str('DIRECTORY_PATH', default='images')
+    os.makedirs(dir_path, exist_ok=True)
     nasa_api_key = env.str('NASA_API')
     fetch_nasa_apod(nasa_api_key)
 

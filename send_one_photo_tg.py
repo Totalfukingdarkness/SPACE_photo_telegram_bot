@@ -9,14 +9,15 @@ def main():
     env.read_env()
     tg_token = env.str('TG_TOKEN')
     tg_chat_id = env.str('TG_CHAT_ID')
-    os.makedirs('images', exist_ok=True)
+    dir_path = env.str('DIRECTORY_PATH', default='images')
+    os.makedirs(dir_path, exist_ok=True)
     parse = argparse.ArgumentParser(description='''Отправляет случайное фото.
                                                 Чтобы отправить определенное фото,
                                                 укажите в аргументе название файла''')
     parse.add_argument('-n', '--name', help='image name')
     args = parse.parse_args()
     if args.name is None:
-        path = 'images/'
+        path = dir_path
         files = os.listdir(path)
         random_files = choice(files)
         file_path = f'{path}{random_files}'
