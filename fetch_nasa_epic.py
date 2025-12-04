@@ -1,11 +1,14 @@
 import requests
 import datetime
 import os
-from environs import env
+from environs import Env
 from support_scripts import download_file
 
+env = Env()
+env.read_env()
 
-def fetch_nasa_apod(key):
+
+def fetch_nasa_epic(key):
     url_nasa = 'https://api.nasa.gov/EPIC/api/natural/'
     payload = {
         'api_key': key,
@@ -24,11 +27,10 @@ def fetch_nasa_apod(key):
 
 
 def main():
-    env.read_env()
     dir_path = env.str('DIRECTORY_PATH', default='images')
     os.makedirs(dir_path, exist_ok=True)
-    nasa_api_key = env.str('NASA_API')
-    fetch_nasa_apod(nasa_api_key)
+    nasa_api_key = env.str('NASA_TOKEN_API')
+    fetch_nasa_epic(nasa_api_key)
 
 
 if __name__ == '__main__':

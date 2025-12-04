@@ -1,16 +1,11 @@
 import requests
-import os
-import telegram
-from urllib.parse import urlparse
+from urllib.parse import urlparse, splitext
 
 
-def displays_image_format(url):
-    response = requests.get(url)
-    response.raise_for_status()
-    response_parse = urlparse(response.url)
-    path_separation = os.path.splitext(response_parse.path)
-    path_image, changed_format = path_separation
-    return changed_format
+def determine_image_format(url):
+    parsed_url = urlparse(url)
+    _, extension = splitext(parsed_url.path)
+    return extension
 
 
 def download_file(url, path, params=None):
@@ -20,7 +15,6 @@ def download_file(url, path, params=None):
         file.write(response.content)
 
 
-def send_image(tg_token, path, tg_chat_id):
-    bot = telegram.Bot(token=tg_token)
-    with open(path, 'rb') as save_file:
-        bot.send_document(chat_id=tg_chat_id, document=save_file)
+def send_image(bot, path, chat_id):
+    with open(path, 'rb') as file:
+        bot.send_document(chat_id=chat_id, document=file)

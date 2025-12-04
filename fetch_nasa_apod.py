@@ -1,37 +1,47 @@
 import requests
 import os
-from environs import env
-from support_scripts import displays_image_format, download_file
+from environs import Env
+from support_scripts import download_file, determine_image_format
+
+env = Env()
+env.read_env()
 
 
-def fetch_nasa_apod(key):
+def fetch_nasa_apod(api_key):
     url_nasa = 'https://api.nasa.gov/planetary/apod'
     payload = {
-        'api_key': key,
-        'count': 30,
-        'thumbs': False,
-    }
-    response = requests.get(url_nasa, params=payload)
-    response.raise_for_status()
-    url_contents = response.json()
-    image_adresses = []
-    for url_content in url_contents:
-        if 'video' in url_content['media_type']:
-            continue
-        img_url = url_content['url']
-        image_adresses.append(img_url)
-    for number, image in enumerate(image_adresses):
-        path = f'images/nasa_apod_{number}{displays_image_format(image)}'
-        download_file(image, path)
+            'api_key': api_key,
+            'image_count': 30,
+            'thumbs': False}
+    try:
+        response = requests.get(url_nasa, params=payload)
+        response.raise_for_status()
+        contents = response.json()
+        image_urls = extract_image_urls(contents)
+        save_images(image_urls)
+    except requests.RequestException as err:
+        print(f"Ошибка подключения к API: {err}")
+
+
+def extract_image_urls(contents):
+    return [
+        item['url'] for item in contents
+        if item['media_type'] == 'image'
+    ]
+
+
+def save_images(image_urls):
+    directory = env.str("DIRECTORY_PATH", default="images")
+    os.makedirs(directory, exist_ok=True)
+    for index, url in enumerate(image_urls):
+        file_path = f"{directory}/nasa_apod_{index}{determine_image_format(url)}"
+        download_file(url, file_path)
 
 
 def main():
-    env.read_env()
-    dir_path = env.str('DIRECTORY_PATH', default='images')
-    os.makedirs(dir_path, exist_ok=True)
-    nasa_api_key = env.str('NASA_API')
+    nasa_api_key = env.str("NASA_TOKEN_API")
     fetch_nasa_apod(nasa_api_key)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
