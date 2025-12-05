@@ -4,9 +4,6 @@ import os
 from environs import Env
 from support_scripts import download_file
 
-env = Env()
-env.read_env()
-
 
 def fetch_nasa_epic(key):
     url_nasa = 'https://api.nasa.gov/EPIC/api/natural/'
@@ -27,9 +24,11 @@ def fetch_nasa_epic(key):
 
 
 def main():
+    env = Env()
+    env.read_env()
     dir_path = env.str('DIRECTORY_PATH', default='images')
     os.makedirs(dir_path, exist_ok=True)
-    nasa_api_key = env.str('NASA_TOKEN_API')
+    nasa_api_key = env.str('NASA_TOKEN')
     fetch_nasa_epic(nasa_api_key)
 
 

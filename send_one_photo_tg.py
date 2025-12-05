@@ -5,11 +5,10 @@ from environs import Env
 from support_scripts import send_image
 from telegram import Bot
 
-env = Env()
-env.read_env()
-
 
 def main():
+    env = Env()
+    env.read_env()
     tg_token = env.str('TG_TOKEN')
     tg_chat_id = env.str('TG_CHAT_ID')
     tg_bot = Bot(token=tg_token)
@@ -18,7 +17,7 @@ def main():
     parse = argparse.ArgumentParser(description='''Отправляет случайное фото.
                                                 Чтобы отправить определенное фото,
                                                 укажите в аргументе название файла''')
-    parse.add_argument('-n', '--name', help='image name')
+    parse.add_argument("-n", "--name", help="Имя конкретного изображения для отправки")
     args = parse.parse_args()
     if args.name is None:
         path = dir_path

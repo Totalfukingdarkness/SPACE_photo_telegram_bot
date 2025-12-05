@@ -4,9 +4,6 @@ import os
 from environs import Env
 from support_scripts import download_file
 
-env = Env()
-env.read_env()
-
 
 def fetch_spacex_last_launch(launch_id):
     url_spacex = 'https://api.spacexdata.com/v5/launches/{0}'.format(launch_id)
@@ -19,6 +16,8 @@ def fetch_spacex_last_launch(launch_id):
 
 
 def main():
+    env = Env()
+    env.read_env()
     dir_path = env.str('DIRECTORY_PATH', default='images')
     os.makedirs(dir_path, exist_ok=True)
     parser = argparse.ArgumentParser(description='Загрузка изображений последнего запуска SpaceX.')

@@ -1,49 +1,44 @@
 import os
-import argparse
+from pathlib import Path
 from random import shuffle
 from time import sleep
-from environs import Env
-from telegram import Bot
+from environs import env
 from support_scripts import send_image
+from telegram.error import NetworkError
+from telegram import Bot
 
-env = Env()
-env.read_env()
 
-
-def send_all_images(bot, tg_chat_id):
-    parser = argparse.ArgumentParser(description="Отправляет все доступные фото.")
-    parser.add_argument("-n", "--name", help="Имя конкретного изображения для отправки")
-    args = parser.parse_args()
-    seconds = env.int("TIME", default=14400)
+def send_all_images(tg_token, tg_chat_id, seconds, file_paths):
     while True:
-        if args.name is None:
-            for dirpath, dirnames, filenames in os.walk(env.str("DIRECTORY_PATH", default="images")):
-                shuffle(filenames)
-                for filename in filenames:
-                    file_path = os.path.join(dirpath, filename)
-                    if not os.path.exists(file_path):
-                        print(f"Файл '{filename}' не найден!")
-                        continue
-                    send_image(bot, file_path, tg_chat_id)
-                    sleep(seconds)
-        else:
-            file_path = os.path.join(env.str("DIRECTORY_PATH", default="images"), args.name)
-            if not os.path.exists(file_path):
-                print(f"Файл '{args.name}' не найден!")
-                break
-            send_image(bot, file_path, tg_chat_id)
-            sleep(seconds)
+        for file_path in file_paths:
+            try:
+                send_image(tg_token, file_path, tg_chat_id)
+                sleep(seconds)
+            except NetworkError:
+                sleep(10)
+        shuffle(file_paths)
+
+
+def create_file_paths(path):
+    file_paths = []
+    for dirpath, dirnames, filenames in os.walk(path):
+        for file_name in filenames:
+            file_path = Path(dirpath) / file_name
+            file_paths.append(file_path)
+        return file_paths
 
 
 def main():
-    tg_token = env.str("TG_TOKEN")
-    tg_chat_id = env.str("TG_CHAT_ID")
-    dir_path = env.str("DIRECTORY_PATH", default="images")
-    os.makedirs(dir_path, exist_ok=True)
+    env.read_env()
+    tg_token = env.str('TG_TOKEN')
+    tg_chat_id = env.str('TG_CHAT_ID')
+    seconds = env.int('TIME', default=14400)
+    dir_path = env.str('DIRECTORY_PATH', default='images')
+    tg_bot = Bot(token=tg_token)
+    Path(dir_path).mkdir(exist_ok=True)
+    file_paths = create_file_paths(dir_path)
+    send_all_images(tg_bot, tg_chat_id, seconds, file_paths)
 
-    bot = Bot(token=tg_token)
-    send_all_images(bot, tg_chat_id)
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
